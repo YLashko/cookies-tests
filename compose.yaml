@@ -1,0 +1,10 @@
+services:
+  cookies-test:
+    build: .
+  
+    networks:
+      - nginx-net
+
+networks:
+  nginx-net:
+    external: true

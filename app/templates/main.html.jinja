@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+    <title>Cookies test</title>
+    <style>
+        .inputs > * {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h3>Cookies test</h3>
+    <table>
+        <tbody>
+            {% for cookie in cookies %}
+                <tr>
+                    <td>Name: {{ cookie.name }}</td>
+                    <td>Value: {{ cookie.value }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="inputs">
+        <label for="none-cookie">Samesite: none cookie</label>
+        <input id="none-cookie" class="cookie-input" type="text" value="">
+
+        <label for="none-cookie">Samesite: lax cookie</label>
+        <input id="lax-cookie" class="cookie-input" type="text" value="">
+
+        <label for="none-cookie">Samesite: strict cookie</label>
+        <input id="strict-cookie" class="cookie-input" type="text" value="">
+    </div>
+
+    <script>
+        const cookieInput = Array.from(document.getElementsByClassName("cookie-input"));
+
+        cookieInput.forEach((input) => {
+            let id = input.getAttribute("id");
+            input.addEventListener("focusout", (e) => {
+                let val = input.value;
+                window.location.pathname = `/${id}/${val}`;
+            })
+        })
+    </script>
+</body>
