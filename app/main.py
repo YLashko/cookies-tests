@@ -2,11 +2,47 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 
 templates = Jinja2Templates(directory="app/templates")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://online4.superoffice.com"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["Content-Security-Policy"] = "frame-ancestors https://online4.superoffice.com"
+    return response
+
+
+class PartitionedCookieRedirectResponse(RedirectResponse):
+    def set_partitioned_cookie(
+        self,
+        key: str,
+        value: str,
+        max_age: int = None,
+        httponly: bool = True,
+    ):
+        cookie = f"{key}={value}; Path=/; Secure; SameSite=None; Partitioned"
+        if httponly:
+            cookie += "; HttpOnly"
+        if max_age:
+            cookie += f"; Max-Age={max_age}"
+        
+        self.headers.append("Set-Cookie", cookie)
 
 
 @app.get("/")
@@ -28,8 +64,15 @@ def home(request: Request):
 
 @app.get("/none-cookie/{value}")
 def set_cookie_none(request: Request, value: str):
-    response = RedirectResponse("/")
-    response.set_cookie("samesite_none", value=value, secure=True, samesite='none', httponly=True)
+    response = PartitionedCookieRedirectResponse("/")
+    # response.set_cookie("samesite_none", value=value, secure=True, samesite='none', httponly=True)
+    response.set_partitioned_cookie(
+        key="samesite_none",
+        value=value,
+        httponly=True,
+        # httponly=False,
+        max_age=60*60*24
+    )
     return response
 
 
@@ -37,6 +80,11 @@ def set_cookie_none(request: Request, value: str):
 def set_cookie_none(request: Request, value: str):
     response = RedirectResponse("/")
     response.set_cookie("samesite_lax", value=value, secure=True, samesite='lax', httponly=True)
+    # response.set_partitioned_cookie(
+    #     key="samesite_lax",
+    #     value=value,
+    #     max_age=60*60*24
+    # )
     return response
 
 
