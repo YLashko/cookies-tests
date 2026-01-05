@@ -29,6 +29,7 @@
         <label for="none-cookie">Samesite: strict cookie</label>
         <input id="strict-cookie" class="cookie-input" type="text" value="">
     </div>
+    <h2>Ticket <div id="ticketid">{{ tiid }}</div></h2>
 
     <script>
         const cookieInput = Array.from(document.getElementsByClassName("cookie-input"));
@@ -36,9 +37,12 @@
         cookieInput.forEach((input) => {
             let id = input.getAttribute("id");
             input.addEventListener("focusout", (e) => {
-                let val = input.value;
-                window.location.pathname = `/${id}/${val}`;
-            })
-        })
+                const val = input.value;
+                const params = ticketid.innerText ? {redirect_to: `/ticket/${ticketid.innerText}`} : {};
+                const searchParams = new URLSearchParams(params);
+                const query = searchParams.toString() ? "?" + searchParams.toString() : "";
+                window.location.assign(`/${id}/${val}${query}`);
+            });
+        });
     </script>
 </body>

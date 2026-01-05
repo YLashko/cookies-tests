@@ -47,6 +47,7 @@ class PartitionedCookieRedirectResponse(RedirectResponse):
 
 @app.get("/")
 def home(request: Request):
+    tiid = ""
     cookies = [
         {
             "name": key,
@@ -58,13 +59,37 @@ def home(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="main.html.jinja",
-        context={"cookies": cookies}
+        context={
+            "cookies": cookies,
+            "tiid": tiid
+        }
+    )
+
+
+@app.get("/ticket/{tiid}")
+def home(request: Request, tiid: int):
+    cookies = [
+        {
+            "name": key,
+            "value": val
+        }
+        for key, val in request.cookies.items()
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="main.html.jinja",
+        context={
+            "cookies": cookies,
+            "tiid": tiid
+        }
     )
 
 
 @app.get("/none-cookie/{value}")
 def set_cookie_none(request: Request, value: str):
-    response = PartitionedCookieRedirectResponse("/")
+    redirect_to = request.query_params.get("redirect_to", "/")
+    response = PartitionedCookieRedirectResponse(redirect_to)
     # response.set_cookie("samesite_none", value=value, secure=True, samesite='none', httponly=True)
     response.set_partitioned_cookie(
         key="samesite_none",
@@ -78,7 +103,8 @@ def set_cookie_none(request: Request, value: str):
 
 @app.get("/lax-cookie/{value}")
 def set_cookie_none(request: Request, value: str):
-    response = RedirectResponse("/")
+    redirect_to = request.query_params.get("redirect_to", "/")
+    response = RedirectResponse(redirect_to)
     response.set_cookie("samesite_lax", value=value, secure=True, samesite='lax', httponly=True)
     # response.set_partitioned_cookie(
     #     key="samesite_lax",
@@ -90,27 +116,31 @@ def set_cookie_none(request: Request, value: str):
 
 @app.get("/strict-cookie/{value}")
 def set_cookie_none(request: Request, value: str):
-    response = RedirectResponse("/")
+    redirect_to = request.query_params.get("redirect_to", "/")
+    response = RedirectResponse(redirect_to)
     response.set_cookie("samesite_strict", value=value, secure=True, samesite='strict', httponly=True)
     return response
 
 
 @app.get("/none-cookie/")
 def set_cookie_none(request: Request):
-    response = RedirectResponse("/")
+    redirect_to = request.query_params.get("redirect_to", "/")
+    response = RedirectResponse(redirect_to)
     response.delete_cookie("samesite_none", secure=True, httponly=True)
     return response
 
 
 @app.get("/lax-cookie/")
 def set_cookie_none(request: Request):
-    response = RedirectResponse("/")
+    redirect_to = request.query_params.get("redirect_to", "/")
+    response = RedirectResponse(redirect_to)
     response.delete_cookie("samesite_lax", secure=True, httponly=True)
     return response
 
 
 @app.get("/strict-cookie/")
 def set_cookie_none(request: Request):
-    response = RedirectResponse("/")
+    redirect_to = request.query_params.get("redirect_to", "/")
+    response = RedirectResponse(redirect_to)
     response.delete_cookie("samesite_strict", secure=True, httponly=True)
     return response
