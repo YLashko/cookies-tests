@@ -126,7 +126,7 @@ def set_cookie_none(request: Request, value: str):
 def set_cookie_none(request: Request):
     redirect_to = request.query_params.get("redirect_to", "/")
     response = RedirectResponse(redirect_to)
-    response.delete_cookie("samesite_none", secure=True, httponly=True)
+    response.delete_cookie("samesite_none", secure=True, httponly=True, samesite='none')
     return response
 
 
